@@ -6,9 +6,9 @@ sudo -v
 # YAMI to initialize properly at runtime.
 sudo apt-get -y install autoconf libtool libdrm-dev xorg xorg-dev \
   openbox libx11-dev libgl1-mesa-glx libegl1-mesa libegl1-mesa-dev \
-  libgl1-mesa-dev meson doxygen cmake
+  libgl1-mesa-dev meson doxygen cmake libx11-xcb-dev libxcb-dri3-dev
 
-INSTALL_PATH=/opt/yami
+INSTALL_PATH=/usr/local
 
 SHOW_HELP=0
 ENABLE_X11=0
@@ -38,7 +38,7 @@ case $i in
 esac
 done
 
-LIBRARY_INSTALLATION_DIR=$INSTALL_PATH/lib
+LIBRARY_INSTALLATION_DIR=$INSTALL_PATH/lib/x86_64-linux-gnu
 
 LIBDRM_CONFIG="-Dlibdir=$LIBRARY_INSTALLATION_DIR -Dradeon=disabled -Damdgpu=disabled -Dnouveau=disabled -Dvmwgfx=disabled"
 LIBVA_CONFIG="-Ddriverdir=$LIBRARY_INSTALLATION_DIR -Dlibdir=$LIBRARY_INSTALLATION_DIR -Dwith_x11=yes -Dwith_wayland=no"
@@ -48,12 +48,19 @@ LIBVA_INTEL_DRIVER_CONFIG="-Ddriverdir=$LIBRARY_INSTALLATION_DIR/dri -Dlibdir=$L
 INTEL_GMMLIB_CONFIG="-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH -DCMAKE_INSTALL_LIBDIR=$LIBRARY_INSTALLATION_DIR"
 LIBYAMI_CONFIG="--disable-jpegdec --disable-vp8dec --disable-h265dec --enable-capi --disable-x11 --enable-mpeg2dec"
 
-LIBDRM_SRC_NAME="drm-libdrm-2.4.114"
-LIBVA_SRC_NAME="libva-2.16.0"
-LIBVAUTILS_SRC_NAME="libva-utils-2.15.0"
-INTEL_MEDIA_DRIVER_SRC_NAME="intel-media-22.6.2"
-LIBVA_INTEL_DRIVER_SRC_NAME="intel-vaapi-driver-2.4.1"
-INTEL_GMMLIB_SRC_NAME="intel-gmmlib-22.3.1"
+LIBDRM_VER="2.4.124"
+LIBVA_SRC_VER="2.22.0"
+LIBVAUTILS_VER="2.22.0"
+INTEL_MEDIA_VER="24.4.4"
+LIBVA_INTEL_VER="2.4.1"
+INTEL_GMMLIB_VER="22.7.0"
+
+LIBDRM_SRC_NAME="drm-libdrm-$LIBDRM_VER"
+LIBVA_SRC_NAME="libva-$LIBVA_SRC_VER"
+LIBVAUTILS_SRC_NAME="libva-utils-$LIBVAUTILS_VER"
+INTEL_MEDIA_DRIVER_SRC_NAME="intel-media-$INTEL_MEDIA_VER"
+LIBVA_INTEL_DRIVER_SRC_NAME="intel-vaapi-driver-$LIBVA_INTEL_VER"
+INTEL_GMMLIB_SRC_NAME="intel-gmmlib-$INTEL_GMMLIB_VER"
 LIBYAMI_INF_CONFIG=
 
 if test $GOT_PARAM -eq 0
@@ -63,17 +70,18 @@ fi
 
 if test $SHOW_HELP -ne 0
 then
-    echo "./buildyami.sh [--prefix=/opt/yami] [--enable-x11 | --disable-x11]"
+    echo "./buildyami.sh [--prefix=/usr/local] [--enable-x11 | --disable-x11]"
     exit 0
 fi
 
 if test $ENABLE_X11 -ne 0
 then
-    LIBVA_CONFIG="--enable-x11 --disable-wayland"
-    LIBVAUTILS_CONFIG="--enable-x11 --disable-wayland"
-    LIBVA_INTEL_DRIVER_CONFIG="--enable-x11 --disable-wayland"
-    LIBYAMI_CONFIG="--disable-jpegdec --disable-vp8dec --disable-h265dec --enable-capi --enable-x11 --enable-mpeg2dec"
-    LIBYAMI_INF_CONFIG="--enable-x11"
+	LIBDRM_CONFIG="-Dlibdir=$LIBRARY_INSTALLATION_DIR -Dradeon=disabled -Damdgpu=disabled -Dnouveau=enabled -Dvmwgfx=enabled"
+	LIBVA_CONFIG="-Ddriverdir=$LIBRARY_INSTALLATION_DIR -Dlibdir=$LIBRARY_INSTALLATION_DIR -Dwith_x11=yes -Dwith_wayland=no"
+	LIBVAUTILS_CONFIG="--libdir=$LIBRARY_INSTALLATION_DIR --enable-x11 --disable-wayland"
+	LIBVA_INTEL_DRIVER_CONFIG="-Ddriverdir=$LIBRARY_INSTALLATION_DIR/dri -Dlibdir=$LIBRARY_INSTALLATION_DIR -Dwith_x11=yes -Dwith_wayland=no"
+	LIBYAMI_CONFIG="--disable-jpegdec --disable-vp8dec --disable-h265dec --enable-capi --enable-x11 --enable-mpeg2dec"
+	LIBYAMI_INF_CONFIG="--enable-x11"
 fi
 
 echo "INSTALL_PATH                = $INSTALL_PATH"
@@ -88,10 +96,10 @@ echo "LIBYAMI_CONFIG              = $LIBYAMI_CONFIG"
 export PKG_CONFIG_PATH="$LIBRARY_INSTALLATION_DIR/pkgconfig"
 export NOCONFIGURE=1
 
-rm -r $INSTALL_PATH/*
+#rm -r $INSTALL_PATH/*
 
 rm -f $LIBDRM_SRC_NAME.tar.gz
-wget https://gitlab.freedesktop.org/mesa/drm/-/archive/libdrm-2.4.114/$LIBDRM_SRC_NAME.tar.gz
+wget https://gitlab.freedesktop.org/mesa/drm/-/archive/libdrm-$LIBDRM_VER/$LIBDRM_SRC_NAME.tar.gz
 if test $? -ne 0
 then
   echo "error downloading $LIBDRM_SRC_NAME.tar.gz"
@@ -100,7 +108,7 @@ fi
 
 rm -f $LIBVA_SRC_NAME.tar.bz2
 rm -f $LIBVA_SRC_NAME.tar
-wget https://github.com/intel/libva/releases/download/2.16.0/$LIBVA_SRC_NAME.tar.bz2
+wget https://github.com/intel/libva/releases/download/$LIBVA_SRC_VER/$LIBVA_SRC_NAME.tar.bz2
 if test $? -ne 0
 then
   echo "error downloading $LIBVA_SRC_NAME.tar.bz2"
@@ -109,7 +117,7 @@ fi
 
 rm -f $LIBVAUTILS_SRC_NAME.tar.bz2
 rm -f $LIBVAUTILS_SRC_NAME.tar
-wget https://github.com/intel/libva-utils/releases/download/2.15.0/$LIBVAUTILS_SRC_NAME.tar.bz2
+wget https://github.com/intel/libva-utils/releases/download/$LIBVAUTILS_VER/$LIBVAUTILS_SRC_NAME.tar.bz2
 if test $? -ne 0
 then
   echo "error downloading $LIBVAUTILS_SRC_NAME.tar.bz2"
@@ -126,7 +134,7 @@ fi
 
 rm -f $LIBVA_INTEL_DRIVER_SRC_NAME.tar.bz2
 rm -f $LIBVA_INTEL_DRIVER_SRC_NAME.tar
-wget https://github.com/intel/intel-vaapi-driver/releases/download/2.4.1/$LIBVA_INTEL_DRIVER_SRC_NAME.tar.bz2
+wget https://github.com/intel/intel-vaapi-driver/releases/download/$LIBVA_INTEL_VER/$LIBVA_INTEL_DRIVER_SRC_NAME.tar.bz2
 if test $? -ne 0
 then
   echo "error downloading $LIBVA_INTEL_DRIVER_SRC_NAME.tar.bz2"
@@ -206,7 +214,7 @@ then
   echo "error configure $LIBVAUTILS_SRC_NAME"
   exit 1
 fi
-make -j"$(nproc)"
+make -j"$((`nproc` - 1))"
 if test $? -ne 0
 then
   echo "error make $LIBVAUTILS_SRC_NAME"
@@ -225,13 +233,13 @@ tar -xf $INTEL_GMMLIB_SRC_NAME.tar.gz
 cd gmmlib-$INTEL_GMMLIB_SRC_NAME
 mkdir _build
 cd _build
-cmake $INTEL_GMMLIB_CONFIG ..
+cmake libx11-xcb-dev libxcb-dri3-dev $INTEL_GMMLIB_CONFIG ..
 if test $? -ne 0
 then
   echo "error configure $INTEL_GMMLIB_SRC_NAME"
   exit 1
 fi
-make -j"$(nproc)"
+make -j"$((`nproc` - 1))"
 if test $? -ne 0
 then
   echo "error make $INTEL_GMMLIB_SRC_NAME"
@@ -246,18 +254,18 @@ fi
 cd ..
 cd ..
 
-git clone https://github.com/intel/media-driver.git media-driver-$INTEL_MEDIA_DRIVER_SRC_NAME
+git clone https://github.com/intel/media-driver.git --branch $INTEL_MEDIA_DRIVER_SRC_NAME media-driver-$INTEL_MEDIA_DRIVER_SRC_NAME
 
 rm -rf build_media_driver || true
 mkdir build_media_driver
 cd build_media_driver
-cmake $INTEL_MEDIA_DRIVER_CONFIG ../media-driver-$INTEL_MEDIA_DRIVER_SRC_NAME/
+cmake libx11-xcb-dev libxcb-dri3-dev $INTEL_MEDIA_DRIVER_CONFIG ../media-driver-$INTEL_MEDIA_DRIVER_SRC_NAME/
 if test $? -ne 0
 then
-  echo "error cmake $INTEL_MEDIA_DRIVER_SRC_NAME"
+  echo "error cmake libx11-xcb-dev libxcb-dri3-dev $INTEL_MEDIA_DRIVER_SRC_NAME"
   exit 1
 fi
-make -j"$(nproc)"
+make -j"$((`nproc` - 1))"
 if test $? -ne 0
 then
   echo "error make $INTEL_MEDIA_DRIVER_SRC_NAME"
@@ -302,14 +310,14 @@ git clone https://github.com/intel/libyami.git
 cd libyami
 git checkout 1.3.2
 ./autogen.sh
-CFLAGS="-O2 -Wall" CXXFLAGS="-O2 -Wall" ./configure --prefix=$INSTALL_PATH --libdir=$LIBRARY_INSTALLATION_DIR $LIBYAMI_CONFIG
+CFLAGS="-O2 -Wall -Wno-array-compare" CXXFLAGS="-O2 -Wall -Wno-array-compare" ./configure --prefix=$INSTALL_PATH --libdir=$LIBRARY_INSTALLATION_DIR $LIBYAMI_CONFIG
 if test $? -ne 0
 then
   echo "error configure libyami"
   exit 1
 fi
 make clean
-make -j"$(nproc)"
+make -j"$((`nproc` - 1))"
 if test $? -ne 0
 then
   echo "error make libyami"
@@ -337,7 +345,7 @@ then
   exit 1
 fi
 make clean
-make -j"$(nproc)"
+make -j"$((`nproc` - 1))"
 if test $? -ne 0
 then
   echo "error make yami_inf"
