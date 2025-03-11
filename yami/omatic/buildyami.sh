@@ -44,7 +44,6 @@ LIBDRM_CONFIG="-Dlibdir=$LIBRARY_INSTALLATION_DIR -Dradeon=disabled -Damdgpu=dis
 LIBVA_CONFIG="-Ddriverdir=$LIBRARY_INSTALLATION_DIR -Dlibdir=$LIBRARY_INSTALLATION_DIR -Dwith_x11=yes -Dwith_wayland=no"
 LIBVAUTILS_CONFIG="--libdir=$LIBRARY_INSTALLATION_DIR --disable-x11 --disable-wayland"
 INTEL_MEDIA_DRIVER_CONFIG="-DLIBVA_DRIVERS_PATH=$LIBRARY_INSTALLATION_DIR/dri -DCMAKE_INSTALL_LIBDIR=$LIBRARY_INSTALLATION_DIR -DCMAKE_PREFIX_PATH=$INSTALL_PATH -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH"
-LIBVA_INTEL_DRIVER_CONFIG="-Ddriverdir=$LIBRARY_INSTALLATION_DIR/dri -Dlibdir=$LIBRARY_INSTALLATION_DIR -Dwith_x11=no -Dwith_wayland=no"
 INTEL_GMMLIB_CONFIG="-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH -DCMAKE_INSTALL_LIBDIR=$LIBRARY_INSTALLATION_DIR"
 LIBYAMI_CONFIG="--disable-jpegdec --disable-vp8dec --disable-h265dec --enable-capi --disable-x11 --enable-mpeg2dec"
 
@@ -52,14 +51,12 @@ LIBDRM_VER="2.4.124"
 LIBVA_SRC_VER="2.22.0"
 LIBVAUTILS_VER="2.22.0"
 INTEL_MEDIA_VER="25.1.3"
-LIBVA_INTEL_VER="2.4.1"
 INTEL_GMMLIB_VER="22.7.0"
 
 LIBDRM_SRC_NAME="drm-libdrm-$LIBDRM_VER"
 LIBVA_SRC_NAME="libva-$LIBVA_SRC_VER"
 LIBVAUTILS_SRC_NAME="libva-utils-$LIBVAUTILS_VER"
 INTEL_MEDIA_DRIVER_SRC_NAME="intel-media-$INTEL_MEDIA_VER"
-LIBVA_INTEL_DRIVER_SRC_NAME="intel-vaapi-driver-$LIBVA_INTEL_VER"
 INTEL_GMMLIB_SRC_NAME="intel-gmmlib-$INTEL_GMMLIB_VER"
 LIBYAMI_INF_CONFIG=
 
@@ -79,7 +76,6 @@ then
 	LIBDRM_CONFIG="-Dlibdir=$LIBRARY_INSTALLATION_DIR -Dradeon=disabled -Damdgpu=disabled -Dnouveau=disabled -Dvmwgfx=disabled"
 	LIBVA_CONFIG="-Ddriverdir=$LIBRARY_INSTALLATION_DIR -Dlibdir=$LIBRARY_INSTALLATION_DIR -Dwith_x11=yes -Dwith_wayland=no"
 	LIBVAUTILS_CONFIG="--libdir=$LIBRARY_INSTALLATION_DIR --enable-x11 --disable-wayland"
-	LIBVA_INTEL_DRIVER_CONFIG="-Ddriverdir=$LIBRARY_INSTALLATION_DIR/dri -Dlibdir=$LIBRARY_INSTALLATION_DIR -Dwith_x11=yes -Dwith_wayland=no"
 	LIBYAMI_CONFIG="--disable-jpegdec --disable-vp8dec --disable-h265dec --enable-capi --enable-x11 --enable-mpeg2dec"
 	LIBYAMI_INF_CONFIG="--enable-x11"
 fi
@@ -89,7 +85,6 @@ echo "LIBDRM_CONFIG               = $LIBDRM_CONFIG"
 echo "LIBVA_CONFIG                = $LIBVA_CONFIG"
 echo "LIBVAUTILS_CONFIG           = $LIBVAUTILS_CONFIG"
 echo "INTEL_MEDIA_DRIVER_SRC_NAME = $INTEL_MEDIA_DRIVER_SRC_NAME"
-echo "LIBVA_INTEL_DRIVER_CONFIG   = $LIBVA_INTEL_DRIVER_CONFIG"
 echo "INTEL_GMMLIB_SRC_NAME       = $INTEL_GMMLIB_SRC_NAME"
 echo "LIBYAMI_CONFIG              = $LIBYAMI_CONFIG"
 
@@ -131,15 +126,6 @@ fi
 #   echo "error downloading $INTEL_MEDIA_DRIVER_SRC_NAME.tar.gz"
 #   exit 1
 # fi
-
-rm -f $LIBVA_INTEL_DRIVER_SRC_NAME.tar.bz2
-rm -f $LIBVA_INTEL_DRIVER_SRC_NAME.tar
-wget https://github.com/intel/intel-vaapi-driver/releases/download/$LIBVA_INTEL_VER/$LIBVA_INTEL_DRIVER_SRC_NAME.tar.bz2
-if test $? -ne 0
-then
-  echo "error downloading $LIBVA_INTEL_DRIVER_SRC_NAME.tar.bz2"
-  exit 1
-fi
 
 rm -f $INTEL_GMMLIB_SRC_NAME.tar.gz
 wget https://github.com/intel/gmmlib/archive/refs/tags/$INTEL_GMMLIB_SRC_NAME.tar.gz
@@ -277,32 +263,6 @@ then
   echo "error make install $INTEL_MEDIA_DRIVER_SRC_NAME"
   exit 1
 fi
-cd ..
-
-rm -rf $LIBVA_INTEL_DRIVER_SRC_NAME
-bunzip2 -k $LIBVA_INTEL_DRIVER_SRC_NAME.tar.bz2
-tar -xf $LIBVA_INTEL_DRIVER_SRC_NAME.tar
-cd $LIBVA_INTEL_DRIVER_SRC_NAME
-meson _build -Dprefix=$INSTALL_PATH $LIBVA_INTEL_DRIVER_CONFIG
-if test $? -ne 0
-then
-  echo "error configure $LIBVA_INTEL_DRIVER_SRC_NAME"
-  exit 1
-fi
-ninja -C _build
-if test $? -ne 0
-then
-  echo "error make $LIBVA_INTEL_DRIVER_SRC_NAME"
-  exit 1
-fi
-cd _build
-meson install
-if test $? -ne 0
-then
-  echo "error make install $LIBVA_INTEL_DRIVER_SRC_NAME"
-  exit 1
-fi
-cd ..
 cd ..
 
 rm -rf libyami
