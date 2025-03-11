@@ -51,7 +51,7 @@ LIBYAMI_CONFIG="--disable-jpegdec --disable-vp8dec --disable-h265dec --enable-ca
 LIBDRM_VER="2.4.124"
 LIBVA_SRC_VER="2.22.0"
 LIBVAUTILS_VER="2.22.0"
-INTEL_MEDIA_VER="24.4.4"
+INTEL_MEDIA_VER="25.1.3"
 LIBVA_INTEL_VER="2.4.1"
 INTEL_GMMLIB_VER="22.7.0"
 
