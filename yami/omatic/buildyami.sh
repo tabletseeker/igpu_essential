@@ -76,7 +76,7 @@ fi
 
 if test $ENABLE_X11 -ne 0
 then
-	LIBDRM_CONFIG="-Dlibdir=$LIBRARY_INSTALLATION_DIR -Dradeon=disabled -Damdgpu=disabled -Dnouveau=enabled -Dvmwgfx=enabled"
+	LIBDRM_CONFIG="-Dlibdir=$LIBRARY_INSTALLATION_DIR -Dradeon=disabled -Damdgpu=disabled -Dnouveau=disabled -Dvmwgfx=disabled"
 	LIBVA_CONFIG="-Ddriverdir=$LIBRARY_INSTALLATION_DIR -Dlibdir=$LIBRARY_INSTALLATION_DIR -Dwith_x11=yes -Dwith_wayland=no"
 	LIBVAUTILS_CONFIG="--libdir=$LIBRARY_INSTALLATION_DIR --enable-x11 --disable-wayland"
 	LIBVA_INTEL_DRIVER_CONFIG="-Ddriverdir=$LIBRARY_INSTALLATION_DIR/dri -Dlibdir=$LIBRARY_INSTALLATION_DIR -Dwith_x11=yes -Dwith_wayland=no"
